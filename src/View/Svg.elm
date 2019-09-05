@@ -68,9 +68,12 @@ viewbox : Float -> Float -> Float -> Float -> Attribute msg
 viewbox x y w h =
     svgAttributeToString (Viewbox x y w h)
 
+
 fill : String -> Attribute msg
 fill s =
     svgAttributeToString (Fill s)
+
+
 stroke : String -> Attribute msg
 stroke s =
     svgAttributeToString (Stroke s)

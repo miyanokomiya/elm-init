@@ -3,6 +3,8 @@ module Main exposing (Msg(..), main, update, view)
 import Browser
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
+import Model.Path
+import View.Path
 import View.Svg exposing (..)
 import VirtualDom exposing (Attribute, Node, attribute, nodeNS)
 
@@ -12,12 +14,16 @@ main =
 
 
 type alias Model =
-    Int
+    Model.Path.Path
 
 
 init : Model
 init =
-    0
+    Model.Path.Path
+        { fill = "black"
+        , stroke = "blue"
+        }
+        [Model.Path.M 0 0, Model.Path.L 30 30]
 
 
 
@@ -25,18 +31,12 @@ init =
 
 
 type Msg
-    = Increment
-    | Decrement
+    = A
 
 
 update : Msg -> Model -> Model
 update msg model =
-    case msg of
-        Increment ->
-            model + 1
-
-        Decrement ->
-            model - 1
+    model
 
 
 
@@ -46,11 +46,9 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ button [ onClick Decrement ] [ text "-" ]
-        , div [] [ text (String.fromInt model) ]
-        , button [ onClick Increment ] [ text "+" ]
-        , svg [ viewbox 0 0 100 100 ]
+        [ svg [ viewbox 0 0 100 100 ]
             [ path [ d [ M 0 0, L 10 2, Z ], stroke "black" ] []
             , path [ d [ M 0 0, L 1 20, Z ], stroke "black" ] []
+            , View.Path.view model
             ]
         ]
