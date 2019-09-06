@@ -1,7 +1,14 @@
-module Model.Element exposing (Element)
+module Model.Element exposing (Attribute(..), Element(..))
+
+import Model.Path
+import Model.Rect
 
 
-type alias Element =
-    { fill : String
-    , stroke : String
-    }
+type Attribute
+    = Fill String
+    | Stroke String
+
+
+type Element
+    = Path (List Model.Path.Attribute) (List Attribute)
+    | Rect (List Model.Rect.Attribute) (List Attribute)

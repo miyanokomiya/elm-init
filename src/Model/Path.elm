@@ -1,6 +1,4 @@
-module Model.Path exposing (..)
-
-import Model.Element exposing (Element)
+module Model.Path exposing (Command(..), Attribute(..))
 
 
 type Command
@@ -9,7 +7,5 @@ type Command
     | Z
 
 
-type alias Path =
-    { element : Element
-    , d : List Command
-    }
+type Attribute
+    = D (List Command)
