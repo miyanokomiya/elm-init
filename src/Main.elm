@@ -1,7 +1,10 @@
 module Main exposing (Msg(..), main, update, view)
 
 import Browser
-import Html exposing (Html, div)
+import Html
+import Html.Events
+import Json.Decode
+import Json.Decode.Pipeline
 import Model.Element
 import Model.Path
 import Model.Rect
@@ -14,14 +17,22 @@ main =
     Browser.sandbox { init = init, update = update, view = view }
 
 
+type alias Position =
+    { x : Int
+    , y : Int
+    }
+
+
 type alias Model =
-    { svg : Model.Element.Element
+    { position : Position
+    , svg : Model.Element.Element
     }
 
 
 init : Model
 init =
-    { svg =
+    { position = Position 0 0
+    , svg =
         Model.Element.Svg
             [ Model.Svg.Viewbox 0 0 400 200
             , Model.Svg.Width 400
@@ -46,13 +57,17 @@ init =
 
 
 type Msg
-    = Select
+    = Select Int Int
+    | Create
 
 
 update : Msg -> Model -> Model
 update msg model =
-    case msg of
-        Select ->
+    case Debug.log "msg" msg of
+        Select x y ->
+            { model | position = Position x y }
+
+        Create ->
             model
 
 
@@ -60,7 +75,28 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Html Msg
+xDecorder : Json.Decode.Decoder (Int -> b) -> Json.Decode.Decoder b
+xDecorder =
+    Json.Decode.Pipeline.required "offsetX" Json.Decode.int
+
+
+yDecorder : Json.Decode.Decoder (Int -> b) -> Json.Decode.Decoder b
+yDecorder =
+    Json.Decode.Pipeline.required "offsetY" Json.Decode.int
+
+
+onClickDecoder : Json.Decode.Decoder Msg
+onClickDecoder =
+    Json.Decode.succeed Select
+        |> xDecorder
+        |> yDecorder
+
+
+view : Model -> Html.Html Msg
 view model =
-    div []
-        [ View.Element.element model.svg ]
+    Html.div []
+        [ Html.p [] [ Html.text (String.fromInt model.position.x), Html.text ", ", Html.text (String.fromInt model.position.y) ]
+        , Html.div [ Html.Events.on "click" onClickDecoder ]
+            [ View.Element.element model.svg
+            ]
+        ]
