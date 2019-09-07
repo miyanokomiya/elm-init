@@ -1,8 +1,10 @@
-module View.Element exposing (elements)
+module View.Element exposing (element, elements)
 
 import Model.Element
+import View.Lib
 import View.Path
 import View.Rect
+import View.Svg
 import VirtualDom
 
 
@@ -23,7 +25,7 @@ attributes attrs =
 
 toDom : String -> List (VirtualDom.Attribute msg) -> List (VirtualDom.Node msg) -> VirtualDom.Node msg
 toDom name attrs children =
-    VirtualDom.nodeNS "http://www.w3.org/2000/svg"
+    VirtualDom.nodeNS View.Lib.xmlns
         name
         attrs
         children
@@ -32,6 +34,9 @@ toDom name attrs children =
 element : Model.Element.Element -> VirtualDom.Node msg
 element elm =
     case elm of
+        Model.Element.Svg a b c ->
+            toDom "svg" (List.append (View.Svg.attributes a) (attributes b)) (List.map element c)
+
         Model.Element.Path a b ->
             toDom "path" (List.append (View.Path.attributes a) (attributes b)) []
 
