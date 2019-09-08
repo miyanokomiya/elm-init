@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="elm.js"></script>
+        <title>Elm App</title>
+    </head>
+    <body>
+		<div id="elm-node" />
+        <script>
+            Elm.Main.init({
+                node: document.getElementById("elm-node"),
+                flags: Date.now()
+            });
+        </script>
+    </body>
+</html>
