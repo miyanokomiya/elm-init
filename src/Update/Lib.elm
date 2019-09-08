@@ -14,17 +14,24 @@ type alias Position =
 
 xDecorder : Json.Decode.Decoder (Int -> b) -> Json.Decode.Decoder b
 xDecorder =
-    Json.Decode.Pipeline.required "offsetX" Json.Decode.int
+    -- TODO clientX is not from <svg>
+    Json.Decode.Pipeline.required "clientX" Json.Decode.int
 
 
 yDecorder : Json.Decode.Decoder (Int -> b) -> Json.Decode.Decoder b
 yDecorder =
-    Json.Decode.Pipeline.required "offsetY" Json.Decode.int
+    -- TODO clientY is not from <svg>
+    Json.Decode.Pipeline.required "clientY" Json.Decode.int
 
 
 messageWithTrue : msg -> ( msg, Bool )
 messageWithTrue msg =
     ( msg, True )
+
+
+on : String -> Json.Decode.Decoder msg -> VirtualDom.Attribute msg
+on event decorder =
+    Html.Events.on event decorder
 
 
 stopPropagationOn : String -> Json.Decode.Decoder msg -> VirtualDom.Attribute msg

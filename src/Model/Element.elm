@@ -23,8 +23,9 @@ type alias ElementState =
 
 type Mode
     = Default
-    | DownStart
-    | Moving
+    | DownCanvasStart
+    | DownElementStart
+    | MovingElement
 
 
 type alias Position =

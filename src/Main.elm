@@ -36,7 +36,8 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "msg" msg of
+    -- case Debug.log "msg" msg of
+    case msg of
         Canvas canvasMsg ->
             let
                 ( subModel, subCmd ) =

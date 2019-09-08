@@ -6,12 +6,14 @@ import Model.Path
 import Model.Rect
 import Random
 import Update.Lib
+import Update.Path
 
 
 type Msg
     = Down Int Int Int
     | Move Int Int
     | Up
+    | DownElement Int
     | Roll
     | NewFace Int
 
@@ -53,7 +55,10 @@ moveIfSelected dx dy element =
 
         Model.Element.Path id a b s ->
             if s.selected then
-                Model.Element.Path id a b s
+                Model.Element.Path id
+                    (Update.Path.move dx dy a)
+                    b
+                    s
 
             else
                 element
@@ -73,13 +78,13 @@ moveIfSelected dx dy element =
                                 Model.Rect.Width val ->
                                     from
 
-                                Model.Rect.Height val ->
+                                Model.Rect.Height _ ->
                                     from
 
-                                Model.Rect.Rx val ->
+                                Model.Rect.Rx _ ->
                                     from
 
-                                Model.Rect.Ry val ->
+                                Model.Rect.Ry _ ->
                                     from
                         )
                         a
@@ -101,21 +106,28 @@ onMoveSvg dx dy element =
     execSvgTree (moveIfSelected (toFloat dx) (toFloat dy)) element
 
 
+clearSelect : Model.Element.Element -> Model.Element.Element
+clearSelect element =
+    execSvgTree (select 0) element
+
+
 update : Msg -> Model.Element.Model -> ( Model.Element.Model, Cmd Msg )
 update msg model =
-    case Debug.log "msg" msg of
-        Down id x y ->
+    -- case Debug.log "msg" msg of
+    case msg of
+        Down _ x y ->
             let
                 p =
                     Model.Element.Position x y
             in
-            ( { model | mode = Model.Element.DownStart, downP = p, moveP = p, svg = onDownSvg id model.svg, selectedIds = [ id ] }, Cmd.none )
-
-        Move x y ->
             if model.mode == Model.Element.Default then
-                ( model, Cmd.none )
+                ( { model | mode = Model.Element.DownCanvasStart, downP = p, moveP = p }, Cmd.none )
 
             else
+                ( { model | downP = p, moveP = p }, Cmd.none )
+
+        Move x y ->
+            if model.mode == Model.Element.DownElementStart || model.mode == Model.Element.MovingElement then
                 let
                     dx =
                         x - model.moveP.x
@@ -123,10 +135,21 @@ update msg model =
                     dy =
                         y - model.moveP.y
                 in
-                ( { model | mode = Model.Element.Moving, moveP = Model.Element.Position x y, svg = onMoveSvg dx dy model.svg }, Cmd.none )
+                ( { model | mode = Model.Element.MovingElement, moveP = Model.Element.Position x y, svg = onMoveSvg dx dy model.svg }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
 
         Up ->
-            update Roll { model | mode = Model.Element.Default, selectedIds = [] }
+            -- update Roll { model | mode = Model.Element.Default }
+            if Debug.log "a" model.mode == Model.Element.DownCanvasStart then
+                ( { model | mode = Model.Element.Default, svg = clearSelect model.svg }, Cmd.none )
+
+            else
+                ( { model | mode = Model.Element.Default }, Cmd.none )
+
+        DownElement id ->
+            ( { model | mode = Model.Element.DownElementStart, svg = execSvgTree (select id) model.svg }, Cmd.none )
 
         Roll ->
             ( model
@@ -144,6 +167,11 @@ onDownDecoder id =
     Json.Decode.succeed (Down id)
         |> Update.Lib.xDecorder
         |> Update.Lib.yDecorder
+
+
+onDownElementDecoder : Int -> Json.Decode.Decoder Msg
+onDownElementDecoder id =
+    Json.Decode.succeed (DownElement id)
 
 
 onMoveDecoder : Json.Decode.Decoder Msg

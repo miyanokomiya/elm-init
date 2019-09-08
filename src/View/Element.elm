@@ -25,13 +25,19 @@ attributes attrs =
     List.map attribute attrs
 
 
+svgAttributesWithHandler : Int -> List Model.Element.Attribute -> List (VirtualDom.Attribute Update.Element.Msg)
+svgAttributesWithHandler id attrs =
+    List.append (attributes attrs)
+        [ Update.Lib.stopPropagationOn "mousedown" (Update.Element.onDownDecoder id)
+        , Update.Lib.stopPropagationOn "mousemove" Update.Element.onMoveDecoder
+        , Update.Lib.stopPropagationOn "mouseup" Update.Element.onUpDecoder
+        ]
+
+
 attributesWithHandler : Int -> List Model.Element.Attribute -> List (VirtualDom.Attribute Update.Element.Msg)
 attributesWithHandler id attrs =
     List.append (attributes attrs)
-        [ Update.Lib.stopPropagationOn "mousedown" (Update.Element.onDownDecoder id)
-
-        , Update.Lib.stopPropagationOn "mousemove" Update.Element.onMoveDecoder
-        , Update.Lib.stopPropagationOn "mouseup" Update.Element.onUpDecoder
+        [ Update.Lib.on "mousedown" (Update.Element.onDownElementDecoder id)
         ]
 
 
@@ -56,7 +62,7 @@ element : Model.Element.Element -> VirtualDom.Node Update.Element.Msg
 element elm =
     case elm of
         Model.Element.Svg id a b c ->
-            toDom "svg" (List.append (View.Svg.attributes a) (attributesWithHandler id b)) (List.map element c)
+            toDom "svg" (List.append (View.Svg.attributes a) (svgAttributesWithHandler id b)) (List.map element c)
 
         Model.Element.Path id a b s ->
             toDom "path" (List.append (View.Path.attributes a) (attributesWithHandler id (selectedAttributes s b))) []
