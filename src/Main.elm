@@ -82,13 +82,13 @@ subscriptions model =
 
 -- VIEW
 
-
+--  Html.Events.on "click" Update.Element.onDownDecoder 
 view : Model -> Html.Html Msg
 view model =
     Html.div []
         [ Html.p [] [ Html.text (String.fromInt model.canvas.downP.x), Html.text ", ", Html.text (String.fromInt model.canvas.downP.y) ]
         , Html.map Canvas
-            (Html.div [ Html.Events.on "click" Update.Element.onDownDecoder ]
+            (Html.div []
                 [ View.Element.element model.svg
                 ]
             )
