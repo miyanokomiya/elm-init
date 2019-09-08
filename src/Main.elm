@@ -1,10 +1,8 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Html
 import Html.Events
-import Json.Decode
-import Json.Decode.Pipeline
 import Model.Element
 import Model.Path
 import Model.Rect
@@ -14,38 +12,14 @@ import View.Element
 import VirtualDom
 
 
-type alias Position =
-    { x : Int
-    , y : Int
-    }
-
-
 type alias Model =
-    { canvas : Update.Element.Model
-    , svg : Model.Element.Element
+    { canvas : Model.Element.Model
     }
 
 
 init : Int -> ( Model, Cmd Msg )
 init now =
-    ( { canvas = Update.Element.init
-      , svg =
-            Model.Element.Svg
-                [ Model.Svg.Viewbox 0 0 400 200
-                , Model.Svg.Width 400
-                , Model.Svg.Height 200
-                ]
-                []
-                [ Model.Element.Path
-                    [ Model.Path.D [ Model.Path.M 0 0, Model.Path.L 0 30, Model.Path.L 30 30 ] ]
-                    [ Model.Element.Fill "red", Model.Element.Stroke "blue" ]
-                , Model.Element.Path
-                    [ Model.Path.D [ Model.Path.M 0 0, Model.Path.L 30 0, Model.Path.L 30 20 ] ]
-                    [ Model.Element.Fill "red", Model.Element.Stroke "blue" ]
-                , Model.Element.Rect
-                    [ Model.Rect.X 50, Model.Rect.Y 50, Model.Rect.Width 20, Model.Rect.Height 40, Model.Rect.Rx 5, Model.Rect.Ry 10 ]
-                    [ Model.Element.Fill "red", Model.Element.Stroke "blue" ]
-                ]
+    ( { canvas = Model.Element.init
       }
     , Cmd.none
     )
@@ -81,15 +55,16 @@ subscriptions model =
 
 
 -- VIEW
+--  Html.Events.on "click" Update.Element.onDownDecoder
 
---  Html.Events.on "click" Update.Element.onDownDecoder 
+
 view : Model -> Html.Html Msg
 view model =
     Html.div []
         [ Html.p [] [ Html.text (String.fromInt model.canvas.downP.x), Html.text ", ", Html.text (String.fromInt model.canvas.downP.y) ]
         , Html.map Canvas
             (Html.div []
-                [ View.Element.element model.svg
+                [ View.Element.element model.canvas.svg
                 ]
             )
         ]

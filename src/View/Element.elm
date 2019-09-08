@@ -1,8 +1,8 @@
 module View.Element exposing (element, elements)
 
-import Html.Events
 import Model.Element
 import Update.Element
+import Update.Lib
 import View.Lib
 import View.Path
 import View.Rect
@@ -20,9 +20,19 @@ attribute attr =
             VirtualDom.attribute "stroke" stroke
 
 
-attributes : List Model.Element.Attribute -> List (VirtualDom.Attribute Update.Element.Msg) -> List (VirtualDom.Attribute Update.Element.Msg)
-attributes attrs handlers =
-    List.append (List.map attribute attrs) handlers
+attributes : List Model.Element.Attribute -> List (VirtualDom.Attribute Update.Element.Msg)
+attributes attrs =
+    List.map attribute attrs
+
+
+attributesWithHandler : Int -> List Model.Element.Attribute -> List (VirtualDom.Attribute Update.Element.Msg)
+attributesWithHandler id attrs =
+    List.append (attributes attrs)
+        [ Update.Lib.stopPropagationOn "mousedown" (Update.Element.onDownDecoder id)
+
+        , Update.Lib.stopPropagationOn "mousemove" Update.Element.onMoveDecoder
+        , Update.Lib.stopPropagationOn "mouseup" Update.Element.onUpDecoder
+        ]
 
 
 toDom : String -> List (VirtualDom.Attribute Update.Element.Msg) -> List (VirtualDom.Node Update.Element.Msg) -> VirtualDom.Node Update.Element.Msg
@@ -33,17 +43,26 @@ toDom name attrs children =
         children
 
 
+selectedAttributes : Model.Element.ElementState -> List Model.Element.Attribute -> List Model.Element.Attribute
+selectedAttributes status attrs =
+    if status.selected then
+        [ Model.Element.Fill "blue", Model.Element.Stroke "black" ]
+
+    else
+        attrs
+
+
 element : Model.Element.Element -> VirtualDom.Node Update.Element.Msg
 element elm =
     case elm of
-        Model.Element.Svg a b c ->
-            toDom "svg" (List.append (View.Svg.attributes a) (attributes b [])) (List.map element c)
+        Model.Element.Svg id a b c ->
+            toDom "svg" (List.append (View.Svg.attributes a) (attributesWithHandler id b)) (List.map element c)
 
-        Model.Element.Path a b ->
-            toDom "path" (List.append (View.Path.attributes a) (attributes b [ Html.Events.on "click" Update.Element.onDownDecoder ])) []
+        Model.Element.Path id a b s ->
+            toDom "path" (List.append (View.Path.attributes a) (attributesWithHandler id (selectedAttributes s b))) []
 
-        Model.Element.Rect a b ->
-            toDom "rect" (List.append (View.Rect.attributes a) (attributes b [])) []
+        Model.Element.Rect id a b s ->
+            toDom "rect" (List.append (View.Rect.attributes a) (attributesWithHandler id (selectedAttributes s b))) []
 
 
 elements : List Model.Element.Element -> List (VirtualDom.Node Update.Element.Msg)
